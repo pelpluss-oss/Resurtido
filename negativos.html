@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Dashboard | Negativos de Bodega</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --primary-color: #0b61d6;
+    --primary-dark: #094a9e;
+    --bg-color: #f4f7fa;
+    --card-bg: #ffffff;
+    --text-dark: #1f2937;
+    --text-light: #475569;
+    --border-color: #e6eefc;
+    --negative-color: #ef4444;
+    --positive-color: #10b981;
+    --shadow-light: 0 4px 12px rgba(0,0,0,0.1);
+    --shadow-dark: 0 6px 16px rgba(0,0,0,0.2);
+  }
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg-color);
+    margin: 0;
+    padding: 24px;
+    color: var(--text-dark);
+  }
+  header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: 2.2rem;
+    color: var(--primary-dark);
+    margin: 0 0 16px 0;
+    font-weight: 700;
+  }
+  .controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .btn, .file-label {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: var(--shadow-light);
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn:hover:not(:disabled), .file-label:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-dark);
+    background: var(--primary-dark);
+  }
+  .btn:active:not(:disabled), .file-label:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+  }
+  .btn:disabled, .file-label:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    background: var(--primary-color);
+  }
+  .file-label {
+    background: var(--positive-color);
+  }
+  .file-label:hover {
+    background: #0d946d;
+  }
+  .filename {
+    font-size: 0.8rem;
+    color: var(--text-dark);
+    margin-left: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+  }
+  .small-note {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 8px;
+    text-align: center;
+    font-weight: 500;
+  }
+  .loading-message {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary-dark);
+    display: none;
+    margin-top: 12px;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  @media (min-width: 768px) {
+    .container {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-areas:
+        "metrics metrics"
+        "chart table";
+      gap: 20px;
+    }
+  }
+  .box {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(15,23,42,0.08);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
+  }
+  .box.metrics { grid-area: metrics; display: flex; justify-content: space-around; flex-wrap: wrap; text-align: center; }
+  .box.chart { grid-area: chart; animation-delay: 0.2s; }
+  .box.table { grid-area: table; animation-delay: 0.4s; }
+  .metric-item {
+    padding: 10px;
+  }
+  .metric-item strong {
+    font-size: 2rem;
+    display: block;
+    color: var(--primary-dark);
+  }
+  .metric-item span {
+    color: var(--text-light);
+    font-size: 0.9rem;
+  }
+  .metric-item.cost strong { color: var(--negative-color); }
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  h2 {
+    color: var(--primary-color);
+    font-size: 1.25rem;
+    margin: 0 0 12px 0;
+    text-align: center;
+    font-weight: 600;
+  }
+  .table-container {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  th, td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f4f8;
+    text-align: center;
+  }
+  thead th {
+    background: var(--primary-color);
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  tr:hover td {
+    background: #eef7ff;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .negative {
+    color: var(--negative-color);
+    font-weight: 700;
+  }
+  .analysis-content {
+    min-height: 80px;
+  }
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .filter-group select {
+    width: 250px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  .filter-group label {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text-dark);
+  }
+  /* Estilos del modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s linear;
+    z-index: 1000;
+  }
+  .modal-overlay.open {
+    visibility: visible;
+    opacity: 1;
+  }
+  .modal-content {
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transform: scale(0.9);
+    transition: transform 0.3s ease-out;
+  }
+  .modal-overlay.open .modal-content {
+    transform: scale(1);
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e7ee;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+  .modal-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--primary-dark);
+  }
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: color 0.2s;
+  }
+  .close-btn:hover {
+    color: var(--text-dark);
+  }
+  .modal-body p {
+    margin: 0 0 8px 0;
+    color: var(--text-dark);
+    font-weight: 500;
+  }
+  .modal-body strong {
+    color: var(--primary-dark);
+    font-weight: 600;
+  }
+  .modal-locations {
+    margin-top: 15px;
+    border-top: 1px solid #e0e7ee;
+    padding-top: 15px;
+  }
+  .modal-locations ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .modal-locations li {
+    background: #f0f7ff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  .modal-locations li span {
+    color: var(--text-light);
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>📈 Dashboard de Negativos de Bodega</h1>
+  <div class="controls">
+    <button class="btn" onclick="location.href='index.html'">INICIO</button>
+    <label class="btn file-label" id="labelResBtn">
+      <input type="file" id="restrFile" accept=".xlsx,.xls" style="display:none">
+      Restringidas <span class="filename" id="nameRes"></span>
+    </label>
+    <label class="btn file-label" id="labelNoResBtn">
+      <input type="file" id="noRestrFile" accept=".xlsx,.xls" style="display:none">
+      No Restringidas <span class="filename" id="nameNoRes"></span>
+    </label>
+    <label class="btn file-label" id="labelPortBtn">
+      <input type="file" id="portFile" accept=".xlsx,.xls" style="display:none">
+      Portafolio <span class="filename" id="namePort"></span>
+    </label>
+    <button class="btn" id="generateBtn" disabled>Generar Comparativo</button>
+    <button class="btn" id="downloadBtn" onclick="descargarExcel()" disabled>📥 Descargar Informe</button>
+  </div>
+  <div class="small-note">Carga los 3 archivos y pulsa <strong>Generar Comparativo</strong>.</div>
+  <div class="loading-message" id="loadingMessage">Cargando... por favor espera</div>
+  <div class="filter-group" id="filterContainer" style="display: none;">
+    <label for="ubicacionFilter">Filtrar por Ubicación:</label>
+    <div style="display:flex; gap:8px;">
+        <select id="ubicacionFilter" multiple size="5" disabled></select>
+        <button class="btn" id="filterBtn" disabled>Aplicar Filtro</button>
+        <button class="btn" id="goaBtn" disabled>INF GOA</button>
+    </div>
+  </div>
+</header>
+<main class="container">
+  <section class="box metrics hidden-box" id="metricsBox">
+    <h2>📊 Análisis Estratégico de Negativos</h2>
+    <div class="metric-item cost">
+      <strong id="totalCost">0</strong>
+      <span>Costo Total Negativos</span>
+    </div>
+    <div class="metric-item">
+      <strong id="articleCount">0</strong>
+      <span>Artículos Afectados</span>
+    </div>
+    <div class="metric-item">
+      <strong id="avgCost">N/A</strong>
+      <span>Ubicación más Afectada</span>
+    </div>
+  </section>
+  <section class="box chart hidden-box">
+    <h2>📈 Gráfico por Ubicaciones</h2>
+    <canvas id="chartCanvas" style="max-height: 240px;"></canvas>
+  </section>
+  <section class="box table hidden-box">
+    <h2>📋 Comparativo de Negativos</h2>
+    <div class="table-container">
+      <div id="comparativoContent" style="padding:6px"></div>
+    </div>
+  </section>
+</main>
+
+<div id="productModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalArticleTitle"></h3>
+      <button class="close-btn" onclick="cerrarModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p><strong>Descripción:</strong> <span id="modalDescription"></span></p>
+      <p><strong>Ubicación en Negativos:</strong> <span id="modalNegativeLocation"></span></p>
+      <div class="negative" style="font-size:1.1rem; margin-top:10px;">
+        <strong>Saldo Final:</strong> <span id="modalFinalBalance"></span>
+        <br><strong>Costo Total Estimado:</strong> <span id="modalTotalCost"></span>
+      </div>
+      <div class="modal-locations">
+        <h4>Detalle de Cantidades:</h4>
+        <p><strong>Cantidad Restringida:</strong> <span id="modalRestrictedQty"></span></p>
+        <p><strong>Cantidad No Restringida:</strong> <span id="modalNonRestrictedQty"></span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let restrData = null, noRestrData = null, portData = null;
+  let resultadoFinalCompleto = [];
+  let currentChart = null;
+  let filteredNegativeData = [];
+  let allUbicaciones = [];
+  const restrInput = document.getElementById('restrFile');
+  const noRestrInput = document.getElementById('noRestrFile');
+  const portInput = document.getElementById('portFile');
+  const nameRes = document.getElementById('nameRes');
+  const nameNoRes = document.getElementById('nameNoRes');
+  const namePort = document.getElementById('namePort');
+  const generateBtn = document.getElementById('generateBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const loadingMessage = document.getElementById('loadingMessage');
+  const filterContainer = document.getElementById('filterContainer');
+  const ubicacionFilter = document.getElementById('ubicacionFilter');
+  const filterBtn = document.getElementById('filterBtn');
+  const goaBtn = document.getElementById('goaBtn');
+  const totalCostEl = document.getElementById('totalCost');
+  const articleCountEl = document.getElementById('articleCount');
+  const mostAffectedEl = document.getElementById('avgCost');
+  
+  // Referencias a los elementos del modal
+  const productModal = document.getElementById('productModal');
+  const modalArticleTitle = document.getElementById('modalArticleTitle');
+  const modalDescription = document.getElementById('modalDescription');
+  const modalNegativeLocation = document.getElementById('modalNegativeLocation');
+  const modalFinalBalance = document.getElementById('modalFinalBalance');
+  const modalTotalCost = document.getElementById('modalTotalCost');
+  const modalRestrictedQty = document.getElementById('modalRestrictedQty');
+  const modalNonRestrictedQty = document.getElementById('modalNonRestrictedQty');
+
+  function leerExcelComoJson(file, callback) {
+    loadingMessage.style.display = 'block';
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: "array" });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(sheet);
+      callback(json);
+      loadingMessage.style.display = 'none';
+    };
+    reader.readAsArrayBuffer(file);
+  }
+  restrInput.addEventListener('change', (ev) => {
+    const f = ev.target.files[0];
+    if (!f) return;
+    nameRes.textContent = f.name;
+    leerExcelComoJson(f, (data) => {
+      restrData = data;
+      checkReady();
+    });
+  });
+  noRestrInput.addEventListener('change', (ev) => {
+    const f = ev.target.files[0];
+    if (!f) return;
+    nameNoRes.textContent = f.name;
+    leerExcelComoJson(f, (data) => {
+      noRestrData = data;
+      checkReady();
+    });
+  });
+  portInput.addEventListener('change', (ev) => {
+    const f = ev.target.files[0];
+    if (!f) return;
+    namePort.textContent = f.name;
+    leerExcelComoJson(f, (data) => {
+      portData = data;
+      checkReady();
+    });
+  });
+  function checkReady() {
+    if (restrData && noRestrData && portData) {
+      generateBtn.disabled = false;
+    }
+  }
+  generateBtn.addEventListener('click', generarReporte);
+  filterBtn.addEventListener('click', aplicarFiltro);
+  goaBtn.addEventListener('click', filtrarGoa);
+
+  function filtrarGoa() {
+    const ubicacionesGOA = ['RESTR', 'TRASL', 'NOVED', 'CENEX', 'FALTA', 'CONSU'];
+    Array.from(ubicacionFilter.options).forEach(option => {
+      option.selected = ubicacionesGOA.includes(option.value);
+    });
+    aplicarFiltro();
+  }
+
+  function generarReporte() {
+    if (!restrData || !noRestrData || !portData) {
+      alert("Carga los 3 archivos primero.");
+      return;
+    }
+    generateBtn.disabled = true;
+    loadingMessage.textContent = 'Generando informe...';
+    loadingMessage.style.display = 'block';
+    document.querySelectorAll('.box').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+    });
+    setTimeout(() => {
+      resultadoFinalCompleto = [];
+      const ubicacionesSet = new Set();
+      const portafolioMap = new Map();
+      portData.forEach(p => {
+        const articulo = String(p["Artículo"]).trim();
+        if (articulo) {
+          portafolioMap.set(articulo, {
+            'Descripcion': p["Descripcion"] || 'N/A',
+            'Total Libros': Number(p["Total Libros"]) || 0,
+            'Coste E/Nvl': Number(p["Coste E/Nvl"]) || 0
+          });
+        }
+      });
+      const restrMap = new Map();
+      restrData.forEach(r => {
+        const articulo = String(r["Artículo"]).trim();
+        if (articulo) {
+          restrMap.set(articulo, {
+            'Ubicación': r["Ubicación"] || "Sin Ubicación",
+            'Cant Base': Number(r["Cant Base"]) || 0,
+            'F/H': r["F/H"] || null
+          });
+        }
+      });
+      noRestrData.forEach(n => {
+        const articulo = String(n["Artículo"]).trim();
+        const cantNoRes = Number(n["Cant Base"]) || 0;
+        const p = portafolioMap.get(articulo);
+        const r = restrMap.get(articulo);
+        if (p) {
+          const totalLibros = p['Total Libros'];
+          const cantRes = r ? r['Cant Base'] : 0;
+          const final = cantRes + cantNoRes - totalLibros;
+          if (final < 0) {
+            const costoUnitario = p['Coste E/Nvl'];
+            const costoTotalArticulo = final * costoUnitario;
+            ubicacionesSet.add(r ? r['Ubicación'] : 'N/A');
+            resultadoFinalCompleto.push({
+              'Artículo': articulo,
+              'Descripcion': p['Descripcion'],
+              'Ubicación': r ? r['Ubicación'] : 'N/A',
+              'Restringida': cantRes,
+              'No Restringida': cantNoRes,
+              'Total Libros': totalLibros,
+              'Final': final,
+              'Costo Unitario': costoUnitario,
+              'Costo Total Artículo': costoTotalArticulo,
+              'F/H': r ? r['F/H'] : null
+            });
+          }
+        }
+      });
+      allUbicaciones = Array.from(ubicacionesSet).sort();
+      populateFilter(allUbicaciones);
+      filterContainer.style.display = 'flex';
+      ubicacionFilter.disabled = false;
+      filterBtn.disabled = false;
+      goaBtn.disabled = false;
+      renderResultados(resultadoFinalCompleto);
+      downloadBtn.disabled = resultadoFinalCompleto.length === 0;
+      generateBtn.disabled = false;
+      document.querySelectorAll('.box').forEach(el => el.style.opacity = '1');
+      loadingMessage.style.display = 'none';
+    }, 100);
+  }
+  
+  function populateFilter(ubicaciones) {
+    ubicacionFilter.innerHTML = "";
+    ubicaciones.forEach(ubicacion => {
+      const option = document.createElement('option');
+      option.value = ubicacion;
+      option.textContent = ubicacion;
+      ubicacionFilter.appendChild(option);
+    });
+  }
+  
+  function aplicarFiltro() {
+    const selectedUbicaciones = Array.from(ubicacionFilter.selectedOptions).map(option => option.value);
+    let resultadosFiltrados = resultadoFinalCompleto;
+    if (selectedUbicaciones.length > 0) {
+      resultadosFiltrados = resultadoFinalCompleto.filter(row => selectedUbicaciones.includes(row.Ubicación));
+    }
+    renderResultados(resultadosFiltrados);
+  }
+
+  function renderResultados(dataToRender) {
+    renderMetrics(dataToRender);
+    renderComparativo(dataToRender);
+    renderGrafico(dataToRender);
+  }
+  
+  function renderMetrics(data) {
+    const totalCost = data.reduce((sum, row) => sum + (row['Costo Total Artículo'] || 0), 0);
+    const articleCount = data.length;
+    const ubicacionCostos = {};
+    data.forEach(item => {
+      const ubicacion = item['Ubicación'];
+      ubicacionCostos[ubicacion] = (ubicacionCostos[ubicacion] || 0) + item['Costo Total Artículo'];
+    });
+    let mostAffectedUbicacion = 'N/A';
+    let maxCost = 0;
+    for (const ubicacion in ubicacionCostos) {
+      if (Math.abs(ubicacionCostos[ubicacion]) > Math.abs(maxCost)) {
+        maxCost = ubicacionCostos[ubicacion];
+        mostAffectedUbicacion = ubicacion;
+      }
+    }
+    totalCostEl.textContent = `$${Math.abs(totalCost).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    articleCountEl.textContent = articleCount.toLocaleString();
+    mostAffectedEl.textContent = `${mostAffectedUbicacion}`;
+  }
+  
+  function renderComparativo(data) {
+    const contentDiv = document.getElementById('comparativoContent');
+    filteredNegativeData = data;
+    if (!filteredNegativeData.length) {
+      contentDiv.innerHTML = "<div style='padding:12px;color:var(--text-light);text-align:center'>No se encontraron productos con saldo negativo.</div>";
+      return;
+    }
+    let html = "<table><thead><tr>";
+    const colsToShow = ["Artículo", "Descripcion", "Ubicación", "Final"];
+    colsToShow.forEach(c => html += `<th>${c}</th>`);
+    html += "</tr></thead><tbody>";
+    filteredNegativeData.forEach(row => {
+      html += `<tr onclick="mostrarAnalisis('${escapeHtml(String(row['Artículo']))}')">`;
+      html += `<td>${row['Artículo']}</td>`;
+      html += `<td>${row['Descripcion'] || 'N/A'}</td>`;
+      html += `<td>${row['Ubicación']}</td>`;
+      html += `<td class="negative">${row['Final']}</td>`;
+      html += "</tr>";
+    });
+    html += "</tbody></table>";
+    contentDiv.innerHTML = html;
+    contentDiv.scrollTop = 0;
+  }
+  
+  function renderGrafico(dataToRender) {
+    const ubicacionesGraficar = allUbicaciones;
+    const agg = {};
+    dataToRender.forEach(r => {
+      const ubicacion = r["Ubicación"] || "Sin Ubicación";
+      agg[ubicacion] = (agg[ubicacion] || 0) + (Number(r["Costo Total Artículo"]) || 0);
+    });
+    
+    const labels = Object.keys(agg);
+    const values = labels.map(l => Math.abs(agg[l])); // Convertir a valor absoluto para el gráfico
+    const ctx = document.getElementById('chartCanvas').getContext('2d');
+    
+    if (currentChart) currentChart.destroy();
+    
+    currentChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Costo Total por Ubicación',
+          data: values,
+          backgroundColor: 'rgba(11, 97, 214, 0.8)',
+          borderColor: 'rgba(11, 97, 214, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: { duration: 1500, easing: 'easeOutQuart' },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { callback: (value) => `$${Math.abs(value).toLocaleString()}` }
+          }
+        },
+        plugins: {
+          legend: { display: true, position: 'top' },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            callbacks: { label: (context) => `Costo: $${Math.abs(context.formattedValue).toLocaleString()}` }
+          },
+          onClick: (event, elements) => {
+            if (elements.length > 0) {
+              const index = elements[0].index;
+              const ubicacionSeleccionada = labels[index];
+              const datosFiltradosPorUbicacion = resultadoFinalCompleto.filter(row => row.Ubicación === ubicacionSeleccionada);
+              renderComparativo(datosFiltradosPorUbicacion);
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  function mostrarAnalisis(articuloEsc) {
+    const articulo = unescapeHtml(articuloEsc);
+    const negativeRow = resultadoFinalCompleto.find(r => String(r['Artículo']) === String(articulo));
+    if (!negativeRow) {
+      alert("No se encontró información detallada para este artículo.");
+      return;
+    }
+    
+    // Rellenar el modal con la información del artículo
+    modalArticleTitle.textContent = negativeRow['Artículo'];
+    modalDescription.textContent = negativeRow['Descripcion'] || 'No disponible';
+    modalNegativeLocation.textContent = negativeRow['Ubicación'];
+    modalFinalBalance.textContent = negativeRow['Final'];
+    modalTotalCost.textContent = `$${Math.abs(negativeRow['Costo Total Artículo']).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    modalRestrictedQty.textContent = negativeRow['Restringida'];
+    modalNonRestrictedQty.textContent = negativeRow['No Restringida'];
+    
+    // Mostrar el modal
+    productModal.classList.add('open');
+  }
+
+  function cerrarModal() {
+    productModal.classList.remove('open');
+  }
+
+  // Cerrar el modal al hacer clic fuera de él
+  window.addEventListener('click', (event) => {
+    if (event.target === productModal) {
+      cerrarModal();
+    }
+  });
+
+  function descargarExcel() {
+    if (!resultadoFinalCompleto.length) { alert("Genera el comparativo antes de descargar."); return; }
+
+    const selectedUbicaciones = Array.from(ubicacionFilter.selectedOptions).map(option => option.value);
+    const today = new Date();
+
+    let dataToReport = resultadoFinalCompleto;
+    if (selectedUbicaciones.length > 0) {
+        dataToReport = resultadoFinalCompleto.filter(row => selectedUbicaciones.includes(row.Ubicación));
+    }
+
+    const totalCostFiltered = dataToReport.reduce((sum, row) => sum + (row['Costo Total Artículo'] || 0), 0);
+    const totalCostGeneral = resultadoFinalCompleto.reduce((sum, row) => sum + (row['Costo Total Artículo'] || 0), 0);
+
+    const productsOver30Days = dataToReport.filter(row => {
+        if (row['F/H']) {
+            const dateStr = String(row['F/H']).split(' ')[0]; // Solo la parte de la fecha
+            const dateParts = dateStr.split('/');
+            const date = new Date(+dateParts[2], dateParts[1] - 1, +dateParts[0]);
+            const diffTime = Math.abs(today - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays > 30;
+        }
+        return false;
+    });
+
+    const ubicacionesParticipacion = {};
+    const ubicacionCostos = {};
+    dataToReport.forEach(item => {
+        const ubicacion = item['Ubicación'];
+        ubicacionCostos[ubicacion] = (ubicacionCostos[ubicacion] || 0) + Math.abs(item['Costo Total Artículo']);
+    });
+
+    for (const ubicacion in ubicacionCostos) {
+        const participacion = (ubicacionCostos[ubicacion] / Math.abs(totalCostGeneral)) * 100;
+        ubicacionesParticipacion[ubicacion] = participacion;
+    }
+
+    const fecha = today.toLocaleString();
+    const informeGerencial = [
+      ["INFORME GERENCIAL - NEGATIVOS DE BODEGA"],
+      ["Fecha de generación:", fecha],
+      [""],
+      ["ANÁLISIS DE LA SITUACIÓN ACTUAL"],
+      ["El presente informe detalla la situación de los artículos con saldos negativos en la bodega, con un enfoque en las ubicaciones filtradas."],
+      [""],
+      ["Métricas Clave:"],
+      ["Costo Total Negativos (Ubicaciones Filtradas):", `$${Math.abs(totalCostFiltered).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+      ["Porcentaje de Participación del Costo:", Object.keys(ubicacionesParticipacion).map(u => `${u}: ${ubicacionesParticipacion[u].toFixed(2)}%`).join(", ")],
+      ["Productos sin ubicación por más de 30 días:", productsOver30Days.length],
+      [""],
+      ["ANÁLISIS DE FECHAS DE ÚLTIMA UBICACIÓN"],
+      ["Se han identificado los siguientes productos con más de 30 días sin ubicación, lo que indica un posible incumplimiento de las políticas de gestión de inventario. Se recomienda una revisión inmediata de estos artículos:"],
+      [""],
+      ["Artículo", "Descripción", "Ubicación", "F/H", "Días sin ubicación"],
+      ...productsOver30Days.map(p => {
+        const dateStr = String(p['F/H']).split(' ')[0];
+        const dateParts = dateStr.split('/');
+        const date = new Date(+dateParts[2], dateParts[1] - 1, +dateParts[0]);
+        const diffTime = Math.abs(today - date);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return [p['Artículo'], p['Descripcion'], p['Ubicación'], p['F/H'], diffDays];
+      }),
+      [""],
+      ["MEJORAS PROPUESTAS"],
+      ["1. Implementar un proceso de revisión diaria de los productos con saldos negativos."],
+      ["2. Establecer una política estricta de 30 días para la reubicación de productos con saldos en ubicaciones restringidas."],
+      ["3. Capacitar al personal de bodega en el manejo adecuado de los movimientos bin."],
+      [""],
+      ["OBSERVACIONES ADICIONALES"],
+      ["El costo total de negativos puede ser un indicador clave de procesos ineficientes. Se sugiere un análisis de la causa raíz de los movimientos que generan estos saldos."]
+    ];
+
+    const headers = ["Artículo", "Descripcion", "Ubicación", "Restringida", "No Restringida", "Total Libros", "Final", "Costo Unitario", "Costo Total Artículo"];
+    const comp = [headers];
+    dataToReport.forEach(r => {
+      comp.push([r['Artículo'], r['Descripcion'], r['Ubicación'], r['Restringida'], r['No Restringida'], r['Total Libros'], r['Final'], r['Costo Unitario'], r['Costo Total Artículo']]);
+    });
+    
+    const wb = XLSX.utils.book_new();
+    const ws1 = XLSX.utils.aoa_to_sheet(informeGerencial);
+    const ws2 = XLSX.utils.aoa_to_sheet(comp);
+
+    XLSX.utils.book_append_sheet(wb, ws1, "Resumen Gerencial");
+    XLSX.utils.book_append_sheet(wb, ws2, "Detalle de Negativos");
+    XLSX.writeFile(wb, "Informe_Negativos_Bodega.xlsx");
+  }
+  
+  function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/'/g, "&#39;").replace(/"/g, "&quot;").replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function unescapeHtml(str) {
+    return str.replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+  }
+</script>
+</body>
+</html>

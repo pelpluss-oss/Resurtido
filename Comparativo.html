@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Comparativo Digital Alkosto Hiperahorro</title>
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg: #f4f7fa;
+      --color-panel: #fff;
+      --color-primary: #0050b8;
+      --color-secondary: #21b573;
+      --color-tertiary: #fdb813;
+      --color-danger: #f14c4c;
+      --color-info: #28a6db;
+      --color-shadow: 0 8px 40px rgba(30, 36, 64, 0.08);
+      --radius: 18px;
+      --font-main: 'Inter', Arial, Helvetica, sans-serif;
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      min-height: 100vh;
+      background: var(--color-bg) url('fondo.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: var(--font-main);
+      color: #232a33;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0 0 48px 0;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.1em;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin: 38px 0 16px 0;
+      letter-spacing: -1px;
+      text-shadow: 1px 2px 5px #fff9, 0 2px 10px #0050b80e;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 35px;
+    }
+    .toolbar button {
+      background: linear-gradient(45deg, var(--color-tertiary), var(--color-primary));
+      color: #fff;
+      border: none;
+      padding: 15px 28px;
+      border-radius: var(--radius);
+      font-size: 1.07em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 
+        background 0.18s cubic-bezier(.4,0,.2,1),
+        box-shadow 0.18s,
+        transform 0.10s;
+      box-shadow: 0 4px 16px rgba(0,80,184,0.10), 0 1px 5px #0001;
+      outline: none;
+    }
+    .toolbar button:hover, .toolbar button:focus-visible {
+      background: linear-gradient(45deg, var(--color-primary), var(--color-tertiary));
+      transform: translateY(-2px) scale(1.045);
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+    .toolbar button:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .paneles {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      max-width: 960px;
+      width: 95vw;
+    }
+    .panel {
+      background: var(--color-panel);
+      color: #232a33;
+      border-radius: var(--radius);
+      padding: 26px 18px 22px 18px;
+      box-shadow: var(--color-shadow);
+      min-width: 0;
+    }
+    .panel h2 {
+      text-align: center;
+      color: var(--color-primary);
+      margin-bottom: 17px;
+      font-size: 1.18em;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    /* Letra más pequeña en la tabla del comparativo */
+    .tabla-comparativo {
+      font-size: 0.8em !important;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: #fff;
+      color: #232a33;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 8px #0050b810;
+    }
+    th, td {
+      border: 1px solid #e1e7ef;
+      padding: 8px;
+      text-align: center;
+      font-size: inherit;
+    }
+    th {
+      background: var(--color-primary);
+      color: white;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    tr:nth-child(even) td {
+      background: #f7faff;
+    }
+    /* Resumen IA panel */
+    .panel-ia {
+      margin-top: 32px;
+      background: var(--color-panel);
+      color: #232a33;
+      border-radius: var(--radius);
+      padding: 26px 18px 22px 18px;
+      box-shadow: var(--color-shadow);
+      width: 95vw;
+      max-width: 960px;
+    }
+    .panel-ia h2 {
+      color: var(--color-info);
+      margin-bottom: 13px;
+      text-align: center;
+      font-size: 1.08em;
+    }
+    #resumenIA {
+      font-size: 1.08em;
+      line-height: 1.6;
+    }
+    @media (max-width: 1000px) {
+      .paneles {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      .panel, .panel-ia {
+        padding: 19px 7vw 17px 7vw;
+      }
+    }
+    @media (max-width: 600px) {
+      h1 { font-size: 1.08em; }
+      .toolbar button { font-size: 0.97em; padding: 12px 10px;}
+      .panel, .panel-ia { padding: 13px 2vw 13px 2vw;}
+      table, th, td { font-size: 0.96em;}
+      .tabla-comparativo { font-size: 0.72em !important; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Comparativo Digital Alkosto Hiperahorro</h1>
+  <div class="toolbar">
+    <button onclick="goHome()">🏠 Inicio</button>
+    <input type="file" id="fileUbicaciones" accept=".xlsx,.xls" style="display:none;" onchange="fileUbicacionesCargado()">
+    <button onclick="document.getElementById('fileUbicaciones').click()">📂 Cargar Ubicaciones</button>
+    <input type="file" id="fileToma" accept=".xlsx,.xls" style="display:none;" onchange="fileTomaCargado()">
+    <button onclick="document.getElementById('fileToma').click()">📂 Cargar Toma</button>
+    <button onclick="procesarComparativo()">⚖️ Realizar Comparativo</button>
+    <button onclick="generarResumenIA()">🤖 Resumen IA</button>
+  </div>
+  <div class="paneles">
+    <div class="panel">
+      <h2>📊 Resultado Comparativo</h2>
+      <div id="resultado">Aquí aparecerán las diferencias...</div>
+    </div>
+    <div class="panel">
+      <h2>📈 Análisis del Resultado</h2>
+      <div id="analisis">Aquí aparecerá el análisis...</div>
+    </div>
+  </div>
+  <div class="panel-ia">
+    <h2>🤖 Resumen Detallado con IA</h2>
+    <div id="resumenIA">Carga tus archivos y ejecuta el comparativo para ver aquí el resumen global generado por inteligencia artificial.<br>Este resumen incluirá los nombres de los productos con diferencias más relevantes.</div>
+  </div>
+  <!-- Librería XLSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    let diferencias = [];
+    let fileUbicacionesData = null;
+    let fileTomaData = null;
+
+    function goHome() {
+      alert("Regresando al inicio...");
+      window.location.href = "index.html";
+    }
+
+    function fileUbicacionesCargado() {
+      alert("Archivo de Ubicaciones cargado correctamente ✅");
+    }
+
+    function fileTomaCargado() {
+      alert("Archivo de Toma cargado correctamente ✅");
+    }
+
+    async function procesarComparativo() {
+      const fileToma = document.getElementById("fileToma").files[0];
+      const fileUbicaciones = document.getElementById("fileUbicaciones").files[0];
+
+      if (!fileToma || !fileUbicaciones) {
+        alert("⚠️ Debes cargar ambos archivos antes de procesar.");
+        return;
+      }
+
+      const tomaData = await leerExcel(fileToma);
+      const ubicacionesData = await leerExcel(fileUbicaciones);
+
+      diferencias = [];
+
+      // Tomamos columnas A y B de "Toma": EAN, Cantidad
+      const toma = tomaData.map(row => ({
+        ean: row[0],
+        cantidad: row[1]
+      })).filter(t => t.ean);
+
+      // Filtrar ubicaciones por columna F = "DIGI1"
+      const ubicacionesFiltradas = ubicacionesData.filter(row => row[5] === "DIGI1");
+
+      // De las ubicaciones filtradas, tomar columnas I (ean, 8), J (descr, 9), K (cantidadBase, 10)
+      const ubicaciones = ubicacionesFiltradas.map(row => ({
+        ean: row[8],
+        descr: row[9] || "Sin nombre",
+        cantidadBase: row[10]
+      })).filter(u => u.ean);
+
+      // Comparación SOLO para los códigos de la toma
+      toma.forEach(t => {
+        const match = ubicaciones.find(u => String(u.ean) === String(t.ean));
+        if (match) {
+          const diferencia = (t.cantidad || 0) - (match.cantidadBase || 0);
+          if (diferencia !== 0) {
+            diferencias.push({
+              ean: t.ean,
+              nombre: match.descr,
+              cantidadToma: t.cantidad,
+              cantidadBase: match.cantidadBase,
+              diferencia: diferencia
+            });
+          }
+        }
+      });
+
+      mostrarDiferencias();
+      mostrarAnalisis();
+      document.getElementById("resumenIA").innerHTML = "<i>Ejecuta <b>🤖 Resumen IA</b> para ver el análisis detallado global.</i>";
+    }
+
+    function mostrarDiferencias() {
+      const div = document.getElementById("resultado");
+      if (diferencias.length === 0) {
+        div.innerHTML = "<p style='color:var(--color-secondary);font-weight:600;'>✅ No se encontraron diferencias.</p>";
+        return;
+      }
+
+      let html = "<table class='tabla-comparativo'><tr><th>EAN</th><th>Producto</th><th>Cantidad Toma</th><th>Cantidad Base</th><th>Diferencia</th></tr>";
+      diferencias.forEach(d => {
+        html += `<tr>
+          <td>${d.ean}</td>
+          <td>${d.nombre || 'Sin nombre'}</td>
+          <td>${d.cantidadToma}</td>
+          <td>${d.cantidadBase}</td>
+          <td style="color:${d.diferencia > 0 ? 'var(--color-secondary)' : 'var(--color-danger)'};font-weight:600;">
+            ${d.diferencia}
+          </td>
+        </tr>`;
+      });
+      html += "</table>";
+      div.innerHTML = html;
+    }
+
+    function mostrarAnalisis() {
+      const div = document.getElementById("analisis");
+      if (diferencias.length === 0) {
+        div.innerHTML = "<p style='color:var(--color-info);font-weight:600;'>🔍 Nada que analizar.</p>";
+        return;
+      }
+
+      const totalDiferencias = diferencias.length;
+      const sumaDiferencias = diferencias.reduce((acc, d) => acc + d.diferencia, 0);
+      const positivos = diferencias.filter(d => d.diferencia > 0).length;
+      const negativos = diferencias.filter(d => d.diferencia < 0).length;
+
+      div.innerHTML = `
+        <p>Total de productos con diferencias: <b>${totalDiferencias}</b></p>
+        <p>Suma total de diferencias: <b style="color:var(--color-primary);">${sumaDiferencias}</b></p>
+        <p>Códigos con sobrantes (positivos): <b style="color:var(--color-secondary);">${positivos}</b></p>
+        <p>Códigos con faltantes (negativos): <b style="color:var(--color-danger);">${negativos}</b></p>
+      `;
+    }
+
+    function leerExcel(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+          resolve(rows);
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    // INTEGRACIÓN IA - Requiere API Key OpenAI
+    async function generarResumenIA() {
+      if (diferencias.length === 0) {
+        document.getElementById("resumenIA").innerHTML = "<p>No hay datos para analizar con IA.</p>";
+        return;
+      }
+      document.getElementById("resumenIA").innerHTML = "<p>Procesando resumen con IA...</p>";
+
+      // Preparamos los primeros 30 productos con nombre
+      let textoResultados = diferencias.slice(0, 30).map(d =>
+        `EAN: ${d.ean}, Nombre: ${d.nombre}, Toma: ${d.cantidadToma}, Base: ${d.cantidadBase}, Diferencia: ${d.diferencia}`
+      ).join("\n");
+      if (diferencias.length > 30) textoResultados += "\n... (solo primeros 30 registros mostrados)";
+
+      const prompt = `
+Analiza globalmente los siguientes resultados de un comparativo de inventario de Alkosto. Explica tendencias, posibles causas de diferencias, y da recomendaciones para el equipo. Sé detallado, profesional y claro. Menciona los productos más relevantes por su nombre y sus diferencias. Los datos son:
+${textoResultados}
+`;
+
+      // Llama a la API de OpenAI (requiere tu API key)
+      // ATENCIÓN: ¡NO expongas tu API key en producción! Para pruebas, reemplaza la cadena por tu key real.
+      const OPENAI_API_KEY = "TU_API_KEY_AQUI"; // <- Sustituye aquí tu API key de OpenAI
+
+      try {
+        const respuesta = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + OPENAI_API_KEY
+          },
+          body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [{role: "user", content: prompt}],
+            max_tokens: 350,
+            temperature: 0.6
+          })
+        });
+        const data = await respuesta.json();
+        const resumen = data.choices?.[0]?.message?.content || "No se pudo generar el resumen.";
+        document.getElementById("resumenIA").innerHTML = `<b>Resumen IA global:</b><br><p>${resumen}</p>`;
+      } catch (err) {
+        document.getElementById("resumenIA").innerHTML = "<p>Error al conectar con la IA. Consulta la consola (F12).</p>";
+        console.error("Error IA:", err);
+      }
+    }
+  </script>
+</body>
+</html>

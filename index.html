@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Dashboard Gerencial - Alkosto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Feather Icons CDN -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        :root {
+            --color-bg: #f4f7fa;
+            --color-panel: #fff;
+            --color-primary: #0050b8;
+            --color-secondary: #21b573;
+            --color-tertiary: #fdb813;
+            --color-danger: #f14c4c;
+            --color-info: #28a6db;
+            --color-shadow: 0 8px 40px rgba(30, 36, 64, 0.08);
+            --radius: 18px;
+            --font-main: 'Inter', Arial, Helvetica, sans-serif;
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            min-height: 100vh;
+            background: var(--color-bg);
+            font-family: var(--font-main);
+            color: #232a33;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        main {
+            background: var(--color-panel);
+            border-radius: var(--radius);
+            box-shadow: var(--color-shadow);
+            padding: 48px 36px 36px 36px;
+            max-width: 420px;
+            width: 96%;
+            position: relative;
+            z-index: 1;
+        }
+        header {
+            margin-bottom: 18px;
+        }
+        h1 {
+            font-size: 2.1em;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin: 0 0 8px 0;
+            letter-spacing: -1px;
+        }
+        h2 {
+            font-size: 1.1em;
+            font-weight: 400;
+            color: #6b7686;
+            margin: 0 0 30px 0;
+        }
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+        .dashboard-btn {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            justify-content: flex-start;
+            background: #f7faff;
+            color: #222;
+            text-decoration: none;
+            font-size: 1.08em;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius);
+            padding: 19px 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: 
+                background 0.17s cubic-bezier(.4,0,.2,1),
+                box-shadow 0.15s,
+                transform 0.09s;
+            position: relative;
+            outline: none;
+        }
+        .dashboard-btn svg {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2.2;
+            color: var(--color-primary);
+            transition: color 0.18s;
+        }
+        /* Botón variantes */
+        .dashboard-btn.btn-negativos svg { color: var(--color-danger);}
+        .dashboard-btn.btn-despachos svg { color: var(--color-secondary);}
+        .dashboard-btn.btn-ubicaciones svg { color: var(--color-tertiary);}
+        .dashboard-btn.btn-comparativo svg { color: var(--color-info);}
+        
+        .dashboard-btn:hover, .dashboard-btn:focus-visible {
+            background: #e5f1fa;
+            box-shadow: 0 6px 28px rgba(0, 80, 184, 0.08);
+            transform: translateY(-2px) scale(1.025);
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+        .dashboard-btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        }
+        @media (max-width: 600px) {
+            main {
+                padding: 22px 6vw 22px 6vw;
+                min-width: 0;
+                max-width: 97vw;
+            }
+            h1 { font-size: 1.15em; }
+            h2 { font-size: 0.97em;}
+            .dashboard-btn {
+                font-size: 0.98em;
+                padding: 14px 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <header>
+            <h1>Programa Operacional<br>Grupo Operativo Alkosto Cali Norte</h1>
+            <h2>Panel de Gestión Estratégica</h2>
+        </header>
+        <nav class="button-group" aria-label="Acciones gerenciales">
+            <a href="negativos.html" class="dashboard-btn btn-negativos">
+                <span><i data-feather="alert-triangle"></i></span>
+                Reporte de Negativos
+            </a>
+            <a href="Despachos.html" class="dashboard-btn btn-despachos">
+                <span><i data-feather="truck"></i></span>
+                Gestión de Despachos
+            </a>
+            <a href="ubicaciones.html" class="dashboard-btn btn-ubicaciones">
+                <span><i data-feather="map-pin"></i></span>
+                Visualización de Ubicaciones
+            </a>
+            <a href="Comparativo.html" class="dashboard-btn btn-comparativo">
+                <span><i data-feather="bar-chart-2"></i></span>
+                Análisis Comparativo Digital
+            </a>
+        </nav>
+    </main>
+    <script>
+        feather.replace();
+    </script>
+</body>
+</html>
