@@ -4,239 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Inventario Empresarial PRO</title>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- xlsx parser -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- Remix Icons for better illustrations -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
     <style>
-        :root {
-            --color-primary: #0050b8;
-            --color-secondary: #0a2239;
-            --color-accent: #21b573;
-            --color-bg: linear-gradient(135deg, #0a2239 0%, #0050b8 65%, #21b573 100%);
-            --color-card: #fff;
-            --color-shade: #f4f7fa;
-            --color-danger: #f14c4c;
-            --color-text-main: #232a33;
-            --color-text-light: #6b7686;
-            --radius: 22px;
-            --shadow: 0 6px 32px rgba(30,36,64,0.12);
-            --transition: 0.18s cubic-bezier(.4,0,.2,1);
-        }
-
-        body {
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            background: var(--color-bg);
-            background-size: 300% 300%;
-            animation: gradientBG 20s ease infinite;
-            color: var(--color-text-main);
-        }
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        header {
-            width: 100%;
-            padding: 32px 0 18px 0;
-            background: rgba(255,255,255,0.88);
-            box-shadow: var(--shadow);
-            border-bottom-left-radius: var(--radius);
-            border-bottom-right-radius: var(--radius);
-            text-align: center;
-        }
-        header h1 {
-            font-size: 2.4em;
-            font-weight: 700;
-            letter-spacing: -1px;
-            color: var(--color-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin: 0 0 8px 0;
-        }
-        header h1 i {
-            font-size: 1.1em;
-            color: var(--color-accent);
-        }
-        header .subtitle {
-            color: var(--color-text-light);
-            font-size: 1.1em;
-            margin-bottom: 0;
-        }
-
-        .main-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 30px;
-            padding: 18px 0 32px 0;
-            width: 96vw;
-            max-width: 1400px;
-            min-height: 82vh;
-            margin: 0 auto;
-        }
-
-        .button-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 22px;
-            justify-content: center;
-            margin: 0 0 18px 0;
-        }
-        .button, .button[role="link"] {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            padding: 15px 32px;
-            border: none;
-            border-radius: var(--radius);
-            font-size: 1.13em;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            color: #fff;
-            background: linear-gradient(90deg, var(--color-primary) 60%, var(--color-accent) 100%);
-            box-shadow: 0 8px 32px #0050b81b;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
-            outline: none;
-        }
-        .button[role="link"] { background: linear-gradient(90deg, #21b573 45%, #0050b8 90%); }
-        .button i { font-size: 1.26em; }
-        .button:hover, .button:focus-visible {
-            background: linear-gradient(90deg, var(--color-accent) 60%, var(--color-primary) 100%);
-            transform: translateY(-2px) scale(1.04);
-            box-shadow: 0 14px 40px #0050b83e;
-        }
-        .button:active { transform: scale(0.97); }
-
-        .loading-bar-container {
-            width: 50%;
-            max-width: 450px;
-            min-width: 180px;
-            background-color: #d4eaff;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 12px auto 18px auto;
-            display: none;
-        }
-        .loading-bar {
-            height: 18px;
-            background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
-            width: 0%;
-            transition: width 0.5s cubic-bezier(.4,0,.2,1);
-        }
-
-        .section-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(370px, 1fr));
-            gap: 30px;
-            width: 100%;
-        }
-        .section {
-            background: var(--color-card);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            min-height: 390px;
-            max-height: 520px;
-            overflow-y: auto;
-            padding: 32px 18px 22px 18px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-        .section h2 {
-            color: var(--color-primary);
-            font-size: 1.18em;
-            font-weight: 700;
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .section h2 i {
-            font-size: 1.3em;
-            color: var(--color-accent);
-        }
-
-        /* Illustrations */
-        .section .ilustracion {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 12px;
-        }
-        .section .ilustracion i {
-            font-size: 3.5em;
-            color: var(--color-accent);
-            opacity: 0.85;
-        }
-        .table-container {
-            margin-top: 10px;
-            overflow-x: auto;
-            flex-grow: 1;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 0.97em;
-        }
-        th, td {
-            padding: 12px 14px;
-            border-bottom: 1px solid #e5eaf0;
-            white-space: nowrap;
-            font-size: inherit;
-        }
-        th {
-            background-color: var(--color-shade);
-            color: var(--color-primary);
-            text-transform: uppercase;
-            font-weight: 700;
-        }
-        tr:nth-child(even) td {
-            background-color: #f4f7fa;
-        }
-        td {
-            color: var(--color-text-main);
-        }
-
-        .chart-container {
-            width: 100%;
-            min-height: 220px;
-            max-height: 300px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        /* Responsive */
-        @media (max-width: 1000px) {
-            header h1 { font-size: 1.4em; }
-            .main-container { padding: 8px 0 24px 0; }
-            .section-container { gap: 20px;}
-        }
-        @media (max-width: 600px) {
-            .main-container { gap: 15px; }
-            .section-container { grid-template-columns: 1fr; gap: 12px;}
-            .section { padding: 10px 2vw 12px 2vw; }
-            table, th, td { font-size: 0.95em; }
-        }
+        /* ... (igual que tu CSS anterior, lo puedes dejar igual) ... */
+        /* Solo agrego esto para mostrar nombre de archivos cargados */
+        .file-info { font-size: 0.97em; color: #0a2239; margin-bottom: 8px; }
     </style>
 </head>
 <body>
-
 <header>
     <h1><i class="ri-store-3-line"></i> Gestión de Inventario PRO</h1>
     <div class="subtitle">Panel Empresarial Moderno &mdash; Visualización y Control Total</div>
 </header>
-
 <div class="main-container">
     <div class="button-group">
         <a href="index.html" class="button" role="link"><i class="ri-home-3-line"></i> Inicio</a>
@@ -246,12 +27,13 @@
         <button class="button" id="reportsBtn"><i class="ri-bar-chart-grouped-line"></i> Informes</button>
         <button class="button" id="checkHeadersBtn"><i class="ri-file-search-line"></i> Encabezados</button>
     </div>
-
+    <div class="file-info" id="gestionFileInfo"></div>
+    <div class="file-info" id="tomaFileInfo"></div>
     <div class="loading-bar-container" id="loadingBarContainer">
         <div class="loading-bar" id="loadingBar"></div>
     </div>
-
     <div class="section-container">
+        <!-- igual que antes... -->
         <div id="gestionSection" class="section">
             <div class="ilustracion"><i class="ri-archive-2-line"></i></div>
             <h2><i class="ri-article-line"></i> Total Gestión por Artículo</h2>
@@ -309,27 +91,43 @@
         </div>
     </div>
 </div>
-
 <input type="file" id="fileInput" style="display: none;">
-
 <script>
+    // ... igual que antes ...
     const fileInput = document.getElementById('fileInput');
     const loadGestionBtn = document.getElementById('loadGestionBtn');
     const loadTomaBtn = document.getElementById('loadTomaBtn');
     const resultsBtn = document.getElementById('resultsBtn');
     const reportsBtn = document.getElementById('reportsBtn');
     const checkHeadersBtn = document.getElementById('checkHeadersBtn');
-
     const loadingBarContainer = document.getElementById('loadingBarContainer');
     const loadingBar = document.getElementById('loadingBar');
-
     const gestionTableBody = document.querySelector('#gestionTable tbody');
     const tomaTableBody = document.querySelector('#tomaTable tbody');
     const resultsTableBody = document.querySelector('#resultsTable tbody');
+    const gestionFileInfo = document.getElementById("gestionFileInfo");
+    const tomaFileInfo = document.getElementById("tomaFileInfo");
 
     let gestionData = {};
     let tomaData = {};
     let finalResults = [];
+    let gestionFileName = "";
+    let tomaFileName = "";
+
+    // Recuperar datos de localStorage al inicio
+    if(localStorage.getItem("gestionData")) {
+        gestionData = JSON.parse(localStorage.getItem("gestionData"));
+        gestionFileName = localStorage.getItem("gestionFileName") || "";
+        gestionFileInfo.textContent = gestionFileName ? `Archivo gestión cargado: ${gestionFileName}` : "";
+        displayGestionResults();
+    }
+    if(localStorage.getItem("tomaData")) {
+        tomaData = JSON.parse(localStorage.getItem("tomaData"));
+        tomaFileName = localStorage.getItem("tomaFileName") || "";
+        tomaFileInfo.textContent = tomaFileName ? `Archivo toma cargado: ${tomaFileName}` : "";
+        displayTomaResults();
+    }
+    if(Object.keys(gestionData).length || Object.keys(tomaData).length) calculateFinalResults();
 
     const vcLocationsToKeep = new Set([
         'DESPA01AKCAN','DESPA02AKCAN','DESPA03AKCAN','DESPA04AKCAN',
@@ -343,33 +141,36 @@
         loadingBar.style.width = '0%';
         setTimeout(() => { loadingBar.style.width = '100%'; }, 50);
     }
-
     function hideLoading() {
         setTimeout(() => { loadingBarContainer.style.display = 'none'; }, 500);
     }
 
     loadGestionBtn.addEventListener('click', () => {
-        const confirmacion = confirm(⚠️ Antes de cargar el archivo, por favor, valide que las ubicaciones sean las correctas.");
+        const confirmacion = confirm("⚠️ Antes de cargar el archivo, por favor, valide que las ubicaciones sean las correctas.");
         if (confirmacion) {
-            fileInput.click();
+            fileInput.value = "";
+            fileInput.accept = ".xls,.xlsx";
             fileInput.onchange = () => handleExcelFileUpload('gestion');
+            fileInput.click();
         }
     });
 
     loadTomaBtn.addEventListener('click', () => {
-        fileInput.click();
+        fileInput.value = "";
+        fileInput.accept = ".csv";
         fileInput.onchange = () => handleCsvFileUpload('toma');
+        fileInput.click();
     });
 
     resultsBtn.addEventListener('click', () => displayFinalResults());
     reportsBtn.addEventListener('click', () => renderCharts());
 
     checkHeadersBtn.addEventListener('click', () => {
-        fileInput.click();
+        fileInput.value = "";
+        fileInput.accept = ".xls,.xlsx,.csv";
         fileInput.onchange = () => {
             const file = fileInput.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
@@ -393,7 +194,6 @@
                         alert("Formato de archivo no soportado. Por favor, sube un archivo .xls, .xlsx o .csv.");
                         return;
                     }
-
                     if (jsonData && jsonData.length > 0) {
                         const headers = jsonData[0];
                         alert("Encabezados encontrados:\n" + headers.join('\n'));
@@ -405,16 +205,16 @@
                     console.error(error);
                 }
             };
-            reader.readAsArrayBuffer(file);
+            if(file.name.endsWith(".csv")) reader.readAsText(file);
+            else reader.readAsArrayBuffer(file);
         };
+        fileInput.click();
     });
 
     function handleExcelFileUpload(type) {
         const file = fileInput.files[0];
         if (!file) return;
-
         showLoading();
-
         const reader = new FileReader();
         reader.onload = (e) => {
             const data = new Uint8Array(e.target.result);
@@ -423,6 +223,11 @@
             const worksheet = workbook.Sheets[firstSheetName];
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
             processGestionData(jsonData);
+            gestionFileName = `${file.name} (${new Date().toLocaleString()})`;
+            gestionFileInfo.textContent = `Archivo gestión cargado: ${gestionFileName}`;
+            // Guardar en localStorage
+            localStorage.setItem("gestionData", JSON.stringify(gestionData));
+            localStorage.setItem("gestionFileName", gestionFileName);
             hideLoading();
         };
         reader.readAsArrayBuffer(file);
@@ -431,9 +236,7 @@
     function handleCsvFileUpload(type) {
         const file = fileInput.files[0];
         if (!file) return;
-
         showLoading();
-
         const reader = new FileReader();
         reader.onload = (e) => {
             const text = e.target.result;
@@ -446,6 +249,11 @@
                 return obj;
             });
             processTomaData(jsonData);
+            tomaFileName = `${file.name} (${new Date().toLocaleString()})`;
+            tomaFileInfo.textContent = `Archivo toma cargado: ${tomaFileName}`;
+            // Guardar en localStorage
+            localStorage.setItem("tomaData", JSON.stringify(tomaData));
+            localStorage.setItem("tomaFileName", tomaFileName);
             hideLoading();
         };
         reader.readAsText(file);
@@ -458,7 +266,6 @@
             const cantidad = parseFloat(item['Cantidad']) || 0;
             const descripcion = String(item['Descripción'] || '');
             const vcLocation = String(item['vc_location'] || '').trim();
-
             if (vcLocationsToKeep.has(vcLocation)) {
                 if (gestionData[articulo]) {
                     gestionData[articulo].cantidad += cantidad;
@@ -477,7 +284,6 @@
             const ean = String(item['EAN'] || '').trim();
             const cantidad = parseFloat(item['Cantidad'] || 0);
             const descripcion = String(item['Descripción de producto'] || '');
-
             if (tomaData[ean]) {
                 tomaData[ean].cantidad += cantidad;
             } else {
@@ -521,7 +327,6 @@
             const gestionQty = gestionData[item] ? gestionData[item].cantidad : 0;
             const tomaQty = tomaData[item] ? tomaData[item].cantidad : 0;
             const description = (gestionData[item] || tomaData[item])?.descripcion || 'Descripción no disponible';
-
             if (gestionQty !== tomaQty) {
                 finalResults.push({ articulo: item, descripcion: description, diferencia: gestionQty - tomaQty });
             }
@@ -551,9 +356,7 @@
         const chartCtx = document.getElementById('diffChart').getContext('2d');
         const articles = finalResults.map(item => item.articulo);
         const differences = finalResults.map(item => item.diferencia);
-
         if (myChart) myChart.destroy();
-
         myChart = new Chart(chartCtx, {
             type: 'bar',
             data: {
